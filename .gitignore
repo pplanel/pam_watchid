@@ -1,0 +1,10 @@
+build/
+*.o
+*.so
+*.dSYM/
+.DS_Store
+
+# Claude Code runtime state
+.claude/*.lock
+.claude/scheduled_tasks.json
+build
