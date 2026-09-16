@@ -6,8 +6,8 @@ final: prev: {
     src = prev.fetchFromGitHub {
       owner = "pplanel";
       repo = "pam_watchid";
-      rev = "d7f7193013b7774fe4db95f07b577ffb6edd7510";
-      hash = "sha256-8z23aYlBF+aQaAnP8NyAviEpTUx2wln/sdRte5P3gs4=";
+      rev = "50acb6f355ba388e4488164300ed8734c4351894";
+      hash = "sha256-OgL6aM2vZQU2NiQgX8gWe74WcuQWxa3TjFMZ/g4E4L8=";
     };
 
     buildInputs = [
