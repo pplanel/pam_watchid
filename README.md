@@ -53,14 +53,75 @@ This initiates an isolated PAM transaction, triggers the Apple Watch prompt, and
 
 ## Installation
 
-### 1. Copy the Module
+### Option A: Declarative Installation with nix-darwin (Recommended)
+
+#### 1. Flake Configuration
+
+Add `pam_watchid` as an input to your system `flake.nix`:
+
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nix-darwin.url = "github:LnL7/nix-darwin";
+    pam-watchid.url = "github:pplanel/pam_watchid";
+    pam-watchid.inputs.nixpkgs.follows = "nixpkgs";
+  };
+
+  outputs = { self, nixpkgs, nix-darwin, pam-watchid, ... }: {
+    darwinConfigurations."my-mac" = nix-darwin.lib.darwinSystem {
+      system = "aarch64-darwin";
+      modules = [
+        {
+          nixpkgs.overlays = [ pam-watchid.overlays.default ];
+
+          # Configure sudo_local
+          security.pam.services.sudo_local.text = ''
+            # Managed by Nix-Darwin
+            auth       optional       ${pkgs.pam-reattach}/lib/pam/pam_reattach.so
+            auth       sufficient     pam_tid.so
+            auth       sufficient     ${pkgs.pam-watchid}/lib/pam/pam_watchid.so
+          '';
+        }
+      ];
+    };
+  };
+}
+```
+
+#### 2. Standalone Overlay (Without Flakes)
+
+Import `pam-watchid.nix` in your configuration's `nixpkgs.overlays`:
+
+```nix
+nixpkgs.overlays = [
+  (import ./pam-watchid.nix)
+];
+```
+
+#### 3. Build Directly with Nix
+
+```bash
+# Build flake target from GitHub
+nix build github:pplanel/pam_watchid
+
+# Or build locally inside this repository
+nix build
+# or: nix-build
+```
+
+---
+
+### Option B: Manual Installation (Without Nix)
+
+#### 1. Copy the Module
 
 ```bash
 sudo install -d -m 755 /usr/local/lib/pam
 sudo install -m 444 build/pam_watchid.so /usr/local/lib/pam/pam_watchid.so.2
 ```
 
-### 2. Configure PAM for Sudo
+#### 2. Configure PAM for Sudo
 
 macOS preserves `/etc/pam.d/sudo_local` across system updates. Create it from the template if it does not already exist:
 
@@ -88,7 +149,7 @@ auth       sufficient     pam_tid.so
 auth       sufficient     pam_watchid.so
 ```
 
-### 3. Verify
+#### 3. Verify
 
 Open a new terminal window and run:
 
