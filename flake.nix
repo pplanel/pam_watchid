@@ -14,13 +14,16 @@
   in {
     packages = forAllSystems (system: let
       pkgs = nixpkgs.legacyPackages.${system};
+      apple-sdk = pkgs.apple-sdk_26 or pkgs.apple-sdk_15 or pkgs.apple-sdk;
     in {
-      default = pkgs.callPackage ./default.nix {};
-      pam-watchid = pkgs.callPackage ./default.nix {};
+      default = pkgs.callPackage ./default.nix { inherit apple-sdk; };
+      pam-watchid = pkgs.callPackage ./default.nix { inherit apple-sdk; };
     });
 
     overlays.default = final: prev: {
-      pam-watchid = prev.callPackage ./default.nix {};
+      pam-watchid = prev.callPackage ./default.nix {
+        apple-sdk = prev.apple-sdk_26 or prev.apple-sdk_15 or prev.apple-sdk;
+      };
     };
   };
 }

@@ -3,9 +3,22 @@
   lib ? pkgs.lib,
   stdenv ? pkgs.stdenv,
   apple-sdk ? pkgs.apple-sdk_26 or pkgs.apple-sdk_15 or pkgs.apple-sdk or null,
+  apple-sdk_26 ? pkgs.apple-sdk_26 or null,
+  apple-sdk_15 ? pkgs.apple-sdk_15 or null,
   openpam ? pkgs.openpam,
 }:
 
+let
+  sdk =
+    if (apple-sdk != null && apple-sdk ? version && lib.versionAtLeast apple-sdk.version "15.0") then
+      apple-sdk
+    else if apple-sdk_26 != null then
+      apple-sdk_26
+    else if apple-sdk_15 != null then
+      apple-sdk_15
+    else
+      apple-sdk;
+in
 stdenv.mkDerivation {
   pname = "pam-watchid";
   version = "2026-09-16";
@@ -20,7 +33,7 @@ stdenv.mkDerivation {
   };
 
   buildInputs = [
-    apple-sdk
+    sdk
     openpam
   ];
 
