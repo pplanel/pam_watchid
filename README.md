@@ -198,6 +198,14 @@ On watchOS, double-clicking the side button defaults to Apple Pay if the watchOS
 - In the iPhone **Watch** app, go to **Wallet & Apple Pay** and disable **"Allow Payments on Mac"** if you do not use Apple Pay on the desktop.
 - Alternatively, enable **AssistiveTouch** (**Settings → Accessibility → AssistiveTouch → Confirm with AssistiveTouch**) on your watch to approve prompts via a hand gesture instead of the physical button.
 
+### Sound plays, but screen remains black during Sleep / Focus modes
+When Sleep Focus (or any Focus mode with **Dim Lock Screen**) is enabled, watchOS activates **Sleep Screen**, which disables **Wake on Wrist Raise** and suppresses incoming UI alerts from lighting up the display.
+- **Disable Sleep Screen (Recommended):** On Apple Watch, open **Settings → Sleep** (or the iPhone **Watch** app → **Sleep**) and toggle **Sleep Screen** to **Off**. Sleep-stage tracking and notification filtering remain active, but the display will turn on and show the double-click prompt as normal.
+- **Disable Dim Lock Screen (Other Focus Modes):** In iOS or macOS, go to **Settings → Focus → [Focus Name] → Options** and ensure **Dim Lock Screen** is toggled **Off**.
+- **Wake Manually:** Tap the screen or press the Digital Crown to wake the watch, then dismiss the Sleep Lock by pressing and holding or rotating the Crown. The pending prompt card will appear. If you need more time to unlock the watch, increase the timeout in `/etc/pam.d/sudo_local` (e.g., `timeout=45`).
+- **Disable "Share Across Devices":** If scheduled bedtime on your iPhone inadvertently puts your Mac and Apple Watch into Sleep Focus while you are actively working, go to macOS **System Settings → Focus** and turn off **Share Across Devices**.
+
+
 ---
 
 ## Uninstallation
