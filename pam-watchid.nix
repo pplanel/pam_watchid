@@ -19,9 +19,8 @@ final: prev: {
       runHook preBuild
       mkdir -p build
       $CC -fobjc-arc -O2 -Wall -Wextra -mmacosx-version-min=15.0 \
-        -dynamiclib \
+        -bundle -undefined dynamic_lookup \
         -Wl,-install_name,pam_watchid.so \
-        -lpam \
         -framework Foundation -framework LocalAuthentication -framework SystemConfiguration \
         -o build/pam_watchid.so src/pam_watchid.m
       runHook postBuild

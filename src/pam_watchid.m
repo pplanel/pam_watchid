@@ -503,6 +503,7 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv) 
             if (success) {
                 result = PAM_SUCCESS;
             } else if (error != nil && [error.domain isEqualToString:LAErrorDomain]) {
+                if (opts.debug) fprintf(stderr, "LAError code: %ld\n", (long)error.code);
                 switch (error.code) {
                     case LAErrorUserCancel:
                         /* Explicit user cancellation: fail auth to stop the chain. */
@@ -524,6 +525,7 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv) 
                         break;
                 }
             } else {
+                if (opts.debug && error) fprintf(stderr, "Unknown error: %s\n", error.description.UTF8String);
                 result = PAM_AUTH_ERR;
             }
             dispatch_semaphore_signal(done);

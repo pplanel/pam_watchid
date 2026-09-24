@@ -41,9 +41,20 @@ int main(int argc, const char **argv) {
         if (!user) user = getenv("USER");
         printf("Initiating PAM authentication test for user '%s'...\n", user);
 
+        void *pam_lib = dlopen("/usr/lib/libpam.2.dylib", RTLD_NOW | RTLD_GLOBAL);
+        if (!pam_lib) {
+            fprintf(stderr, "dlopen failed for system pam: %s\n", dlerror());
+            dlclose(handle);
+            return 1;
+        }
+        
+        int (*sys_pam_start)(const char *, const char *, const struct pam_conv *, pam_handle_t **) = dlsym(pam_lib, "pam_start");
+        int (*sys_pam_end)(pam_handle_t *, int) = dlsym(pam_lib, "pam_end");
+        const char *(*sys_pam_strerror)(pam_handle_t *, int) = dlsym(pam_lib, "pam_strerror");
+        
         struct pam_conv conv = { dummy_conv, NULL };
         pam_handle_t *pamh = NULL;
-        int status = pam_start("sudo", user, &conv, &pamh);
+        int status = sys_pam_start("sudo", user, &conv, &pamh);
         if (status != PAM_SUCCESS) {
             fprintf(stderr, "pam_start failed with code %d\n", status);
             dlclose(handle);
@@ -59,9 +70,9 @@ int main(int argc, const char **argv) {
         }
 
         int pam_res = auth_fn(pamh, 0, module_argc, module_argv);
-        printf("pam_sm_authenticate returned: %d (%s)\n", pam_res, pam_strerror(pamh, pam_res));
+        printf("pam_sm_authenticate returned: %d (%s)\n", pam_res, sys_pam_strerror(pamh, pam_res));
 
-        pam_end(pamh, pam_res);
+        sys_pam_end(pamh, pam_res);
         dlclose(handle);
 
         return (pam_res == PAM_SUCCESS) ? 0 : 1;

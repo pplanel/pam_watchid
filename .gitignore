@@ -8,3 +8,4 @@ build/
 .claude/*.lock
 .claude/scheduled_tasks.json
 build
+/result

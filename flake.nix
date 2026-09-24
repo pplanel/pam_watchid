@@ -15,9 +15,11 @@
     packages = forAllSystems (system: let
       pkgs = nixpkgs.legacyPackages.${system};
       apple-sdk = pkgs.apple-sdk_26 or pkgs.apple-sdk_15 or pkgs.apple-sdk;
-    in {
-      default = pkgs.callPackage ./default.nix { inherit apple-sdk; };
       pam-watchid = pkgs.callPackage ./default.nix { inherit apple-sdk; };
+    in {
+      default = pam-watchid;
+      pam-watchid = pam-watchid;
+      harness = pkgs.callPackage ./harness.nix { inherit apple-sdk pam-watchid; };
     });
 
     overlays.default = final: prev: {
