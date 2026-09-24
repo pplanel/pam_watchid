@@ -78,6 +78,7 @@ static const LAPolicy kPolicy = LAPolicyDeviceOwnerAuthenticationWithCompanion;
  */
 typedef struct {
     BOOL debug;              /* Whether to emit diagnostic logs to os_log. */
+    BOOL allowRemote;        /* Whether to allow authentication in remote/SSH sessions. */
     int64_t timeoutSec;      /* Maximum duration to wait before timing out. */
     NSString *customReason;  /* User-override for the localized reason string. */
 } pam_options_t;
@@ -97,6 +98,7 @@ typedef struct {
 static pam_options_t parse_options(int argc, const char **argv) {
     pam_options_t opts = {
         .debug = NO,
+        .allowRemote = NO,
         .timeoutSec = kDefaultTimeoutSec,
         .customReason = nil,
     };
@@ -105,6 +107,8 @@ static pam_options_t parse_options(int argc, const char **argv) {
         if (!argv[i]) continue;
         if (strcmp(argv[i], "debug") == 0) {
             opts.debug = YES;
+        } else if (strcmp(argv[i], "allow_remote") == 0) {
+            opts.allowRemote = YES;
         } else if (strncmp(argv[i], "timeout=", 8) == 0) {
             int val = atoi(argv[i] + 8);
             if (val > 0) opts.timeoutSec = val;
@@ -402,11 +406,13 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv) 
     }
 
     /* 2. Disallow remote connections (e.g. SSH): Protect against unauthorized remote triggers. */
-    const void *rhost = NULL;
-    if (pam_get_item(pamh, PAM_RHOST, &rhost) == PAM_SUCCESS && rhost != NULL) {
-        if (strlen((const char *)rhost) > 0) {
-            if (opts.debug) os_log_debug(log, "Remote session detected (%{public}s); skipping.", (const char *)rhost);
-            return PAM_AUTHINFO_UNAVAIL;
+    if (!opts.allowRemote) {
+        const void *rhost = NULL;
+        if (pam_get_item(pamh, PAM_RHOST, &rhost) == PAM_SUCCESS && rhost != NULL) {
+            if (strlen((const char *)rhost) > 0) {
+                if (opts.debug) os_log_debug(log, "Remote session detected (%{public}s); skipping.", (const char *)rhost);
+                return PAM_AUTHINFO_UNAVAIL;
+            }
         }
     }
 
@@ -424,8 +430,10 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv) 
     }
 
     /* 5. Check interactive terminal: Fall back if stdin is not a TTY and SSH is detected. */
-    if (!isatty(STDIN_FILENO) && getenv("SSH_CONNECTION") != NULL) {
-        return PAM_AUTHINFO_UNAVAIL;
+    if (!opts.allowRemote) {
+        if (!isatty(STDIN_FILENO) && getenv("SSH_CONNECTION") != NULL) {
+            return PAM_AUTHINFO_UNAVAIL;
+        }
     }
 
     __block int result = PAM_AUTH_ERR;

@@ -171,6 +171,7 @@ auth       sufficient     pam_watchid.so debug timeout=15
 
 | Option | Default | Description |
 | :--- | :--- | :--- |
+| `allow_remote` | Off | Permits Apple Watch authentication when connected via SSH or other remote sessions. By default, remote sessions are blocked to prevent unauthorized triggers. |
 | `debug` | Off | Emits detailed diagnostic logs to unified logging (`subsystem: org.pam.watchid`). |
 | `timeout=<seconds>` | `30` | Maximum wait duration before invalidating the prompt and failing open. |
 | `reason=<string>` | Dynamic | Overrides the dynamic prompt with a fixed authorization reason. |
