@@ -509,6 +509,7 @@ pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc, const char **argv) 
                         /* Explicit user cancellation: fail auth to stop the chain. */
                         result = PAM_AUTH_ERR;
                         break;
+                    case LAErrorAuthenticationFailed:
                     case LAErrorUserFallback:
                     case LAErrorCompanionNotAvailable:
                     case LAErrorBiometryNotAvailable:
